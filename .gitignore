@@ -1,0 +1,21 @@
+# Local isolated worktrees
+.worktrees/
+
+# Secrets and local environment
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Editors and operating systems
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Local scratch output
+.tmp/
+tmp/

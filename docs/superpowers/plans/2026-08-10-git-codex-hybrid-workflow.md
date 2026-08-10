@@ -41,7 +41,7 @@
 
 **Files:**
 - Create: `.gitattributes`
-- Create: `.gitignore`
+- Modify: `.gitignore`
 - Create: `README.md`
 - Create: `AGENTS.md`
 
@@ -65,6 +65,9 @@ Create `.gitattributes` with exactly:
 Create `.gitignore` with exactly:
 
 ```gitignore
+# Local isolated worktrees
+.worktrees/
+
 # Secrets and local environment
 .env
 .env.*

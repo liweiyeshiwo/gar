@@ -44,7 +44,7 @@ jobs:
             exit 1
           fi
 
-          if git grep -nI -E 'TBD|TODO|寰呭畾|鏈‘瀹殀寰呰ˉ' -- "${required_files[@]}"; then
+          if git grep -nI -E 'TBD|TODO|待定|未确定|待补' -- "${required_files[@]}"; then
             echo "::error::contract files contain unresolved placeholders"
             exit 1
           fi

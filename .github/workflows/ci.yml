@@ -32,6 +32,15 @@ jobs:
             .github/workflows/ci.yml
           )
 
+          placeholder_files=(
+            .gitattributes
+            .gitignore
+            README.md
+            AGENTS.md
+            docs/development-workflow.md
+            .github/pull_request_template.md
+          )
+
           for file in "${required_files[@]}"; do
             if [[ ! -s "$file" ]]; then
               echo "::error file=$file::required file is missing or empty"
@@ -44,7 +53,7 @@ jobs:
             exit 1
           fi
 
-          if git grep -nI -E 'TBD|TODO|待定|未确定|待补' -- "${required_files[@]}"; then
+          if git grep -nI -E 'TBD|TODO|待定|未确定|待补' -- "${placeholder_files[@]}"; then
             echo "::error::contract files contain unresolved placeholders"
             exit 1
           fi

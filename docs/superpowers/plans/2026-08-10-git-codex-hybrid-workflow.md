@@ -41,7 +41,7 @@
 
 **Files:**
 - Create: `.gitattributes`
-- Modify: `.gitignore`
+- Verify: `.gitignore` (established by approved preflight commit `38fc42c`)
 - Create: `README.md`
 - Create: `AGENTS.md`
 
@@ -62,7 +62,7 @@ Create `.gitattributes` with exactly:
 *.ps1 text eol=lf
 ```
 
-Create `.gitignore` with exactly:
+Verify that the `.gitignore` established by approved preflight commit `38fc42c` contains exactly:
 
 ```gitignore
 # Local isolated worktrees
@@ -208,12 +208,12 @@ Expected: exit code `0`, no missing-file exception, and no whitespace errors.
 - [ ] **Step 5: Commit the repository contract**
 
 ```powershell
-git add -- .gitattributes .gitignore README.md AGENTS.md
+git add -- .gitattributes README.md AGENTS.md
 git diff --cached --check
 git commit -m "chore: establish repository workflow contract"
 ```
 
-Expected: one commit containing only the four contract files.
+Expected: `.gitignore` remains the final contract file established by approved preflight commit `38fc42c` and is verified only in Task 1. One Task 1 commit contains only `.gitattributes`, `README.md`, and `AGENTS.md`.
 
 ---
 

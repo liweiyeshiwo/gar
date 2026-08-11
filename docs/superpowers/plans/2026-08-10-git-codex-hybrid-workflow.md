@@ -41,7 +41,7 @@
 
 **Files:**
 - Create: `.gitattributes`
-- Modify: `.gitignore`
+- Verify: `.gitignore` (established by approved preflight commit `38fc42c`)
 - Create: `README.md`
 - Create: `AGENTS.md`
 
@@ -62,7 +62,7 @@ Create `.gitattributes` with exactly:
 *.ps1 text eol=lf
 ```
 
-Create `.gitignore` with exactly:
+Verify that the `.gitignore` established by approved preflight commit `38fc42c` contains exactly:
 
 ```gitignore
 # Local isolated worktrees
@@ -208,12 +208,12 @@ Expected: exit code `0`, no missing-file exception, and no whitespace errors.
 - [ ] **Step 5: Commit the repository contract**
 
 ```powershell
-git add -- .gitattributes .gitignore README.md AGENTS.md
+git add -- .gitattributes README.md AGENTS.md
 git diff --cached --check
 git commit -m "chore: establish repository workflow contract"
 ```
 
-Expected: one commit containing only the four contract files.
+Expected: `.gitignore` remains the final contract file established by approved preflight commit `38fc42c` and is verified only in Task 1. One Task 1 commit contains only `.gitattributes`, `README.md`, and `AGENTS.md`.
 
 ---
 
@@ -412,6 +412,8 @@ Expected: one commit containing only the runbook and PR template.
 - Consumes: Required contract files from Tasks 1 and 2.
 - Produces: One stable GitHub check named `quality`, plus an intentionally failing signal for the later handoff rehearsal.
 
+Bootstrap note: the user approved a one-time controller push of commit `38fc42c` to create `origin/main`. This is the only direct `main` bootstrap; Task 1-3 implementation remains on `codex/hybrid-workflow` and returns through a PR.
+
 - [ ] **Step 1: Create the CI workflow**
 
 Create `.github/workflows/ci.yml` with exactly:
@@ -506,27 +508,29 @@ Run:
 
 ```powershell
 git status --short
-git diff --check HEAD~3..HEAD
-git log --oneline -4
+git diff --check 38fc42c..HEAD
+git log --oneline 38fc42c..HEAD
 ```
 
-Expected: a clean working tree and three new focused commits after the already-committed design/research baseline.
+Expected: a clean working tree and focused Task 1-3 commits after the approved bootstrap base `38fc42c`.
 
-- [ ] **Step 5: Push the initial `main` baseline**
+- [ ] **Step 5: Push the reviewed feature branch**
+
+This step and Step 6 are controller-owned remote gates performed only after the per-task local review approves the CI commit. The implementer stops after Step 4.
 
 Run:
 
 ```powershell
-git push -u origin main
+git push -u origin codex/hybrid-workflow
 ```
 
-Expected: `origin/main` is created and the GitHub Actions workflow starts.
+Expected: `origin/codex/hybrid-workflow` is created; `origin/main` remains at the approved bootstrap commit until the user merges the PR.
 
-- [ ] **Step 6: Verify the first real `quality` check before configuring protection**
+- [ ] **Step 6: Open the workflow PR and verify the first real `quality` check**
 
-Open the repository Actions page and verify the `quality` workflow completed successfully for the pushed `main` commit. Record the exact visible check name `quality`.
+Open a draft PR from `codex/hybrid-workflow` to `main`, fill the repository PR template, and verify the `quality` workflow completed successfully for the PR head. Record the exact visible check name `quality`.
 
-Expected: one successful `quality` check attached to the latest `main` commit. Stop here if the check has not succeeded; do not create a required check by guessed name.
+Expected: one successful `quality` check attached to the PR head. Stop here if the check has not succeeded; do not create a required check by guessed name.
 
 ---
 
@@ -536,7 +540,7 @@ Expected: one successful `quality` check attached to the latest `main` commit. S
 - No repository file changes.
 
 **Interfaces:**
-- Consumes: A pushed `main` branch and a proven `quality` check from Task 3.
+- Consumes: The bootstrap `origin/main`, the pushed `codex/hybrid-workflow` branch, its draft PR, and a proven `quality` check from Task 3.
 - Produces: Protected `main`, a least-privilege Codex cloud repository connection, and a cloud environment that reads the repository contract.
 
 - [ ] **Step 1: Protect `main` only after the successful CI run exists**
@@ -587,6 +591,12 @@ Read AGENTS.md and docs/development-workflow.md. Do not modify files. Report the
 
 Expected: the response identifies `git diff --check`, `git status --short`, the one-writer rule, and the user as the only merge decision-maker; the task returns no diff.
 
+- [ ] **Step 5: Let the user merge the reviewed workflow baseline**
+
+After branch protection is active, the PR `quality` check passes, review conversations are resolved, and local revalidation is clean, the user converts the draft PR to ready and merges it.
+
+Expected: `origin/main` contains the repository contract, runbook, PR template, and CI workflow; the push-triggered `quality` run on `main` also succeeds.
+
 ---
 
 ### Task 5: Prove the Local-to-Cloud Handoff End to End
@@ -604,9 +614,8 @@ Expected: the response identifies `git diff --check`, `git status --short`, the 
 Run:
 
 ```powershell
-git switch main
-git pull --ff-only
-git switch -c codex/handoff-smoke-test
+git fetch origin
+git switch -c codex/handoff-smoke-test origin/main
 ```
 
 Expected: the active branch is `codex/handoff-smoke-test` and starts from the protected `main` baseline.
@@ -734,14 +743,14 @@ Expected: clean working tree; no whitespace errors; only `docs/handoff-smoke-tes
 After the user converts the draft PR to ready and merges it, run:
 
 ```powershell
-git switch main
-git pull --ff-only
+git fetch origin
 git status --short
-Select-String -Path docs/handoff-smoke-test.md -Pattern '^Status: cloud-complete$'
-git log -1 --oneline
+$mergedSmokeTest = git show origin/main:docs/handoff-smoke-test.md
+$mergedSmokeTest | Select-String -Pattern '^Status: cloud-complete$'
+git log -1 --oneline origin/main
 ```
 
-Expected: clean `main`, the completed smoke-test artifact is present, and the latest history contains the merged PR.
+Expected: the worktree is clean, `origin/main` contains the completed smoke-test artifact, and its latest history contains the merged PR.
 
 ---
 
@@ -802,12 +811,13 @@ If Step 2 made no change, skip the commit and preserve the clean working tree.
 Run:
 
 ```powershell
+git fetch origin
 git status --short --branch
 git diff --check
-git log --oneline --decorate -8
+git log --oneline --decorate -8 origin/main
 ```
 
-Expected: clean `main`, no whitespace errors, and visible history for the baseline, workflow, CI, and handoff rehearsal.
+Expected: a clean worktree, no whitespace errors, and `origin/main` history showing the baseline, workflow, CI, and handoff rehearsal.
 
 ---
 
